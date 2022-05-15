@@ -28,12 +28,12 @@ WHEN I click on a city in the search history
 THEN I am again presented with current and future conditions for that city
 ```
 
-* I added a feature to look up the visitor's city by IP address if they are a new visitor (ip-api.com).
+* I added a feature to look up the visitor's city by IP address if they are a new visitor (ip-api.com). This doesn't work as the provider charges for https api access. 😬 it now defaults to New York.
 * Data is persistent using the localStorage API
     * Last displayed city will show again upon re-visit
     * The city button list will be saved
     * Weather API data is cached in localStorage and rate-limited to once every 5 minutes. I did this to be kind to the API provider, to improve performance, and in development my browser refreshes automatically.
-* An interesting limitation in the openweathermap.org API is that UV Index is available only through their "onecall" API but it doesn't allow lookup by city name, only by latitude and longitude. The solution is to call their geocoding API first, store lat and lon coordinates, and then make a onecall API call.
+* An interesting limitation in the openweathermap.org API is that UV Index is available only through their "onecall" API but onecall doesn't allow lookup by city name, only by latitude and longitude. The solution is to call their geocoding API first, store lat and lon coordinates, and then make a onecall API call.
 * Another challenge is to convert the Unix style date to a useable format, I used moment.js, and the dates returned from openweathermap.org, in the forecast section, are dates and times local to the city. This application does not display the time, but it does show the date, and that is a local date to the city.
 * I also added the day of the week to the 5-day forecast because it is confusing without it.
 * I used plain JavaScript instead of jQuery.
@@ -54,7 +54,7 @@ This creates the folder 06-Server-Side-APIs within which you will find the proje
 
 Since this is a classroom exercise, I would recommend simply opening the index.html file in a browser on your local machine.
 
-[![Third Party APIs][screenshot]](./assets/images/05-third-party-apis.png)
+[![Third Party APIs][screenshot]](./assets/images/06-server-side-apis.png)
 
 ## Credits
 
