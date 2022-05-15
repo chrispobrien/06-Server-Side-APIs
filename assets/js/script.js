@@ -317,13 +317,16 @@ var findCurrentCity = function() {
                 }
                 else
                     local.city = "New York";
+                    getLatLon();
             });
         } else {
             local.city = "New York";
+            getLatLon();
         }
     })
     .catch(function(error) {
         local.city = "New York";
+        getLatLon();
     });
 };
 
