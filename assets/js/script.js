@@ -321,6 +321,9 @@ var findCurrentCity = function() {
         } else {
             local.city = "New York";
         }
+    })
+    .catch(function(error) {
+        local.city = "New York";
     });
 };
 
