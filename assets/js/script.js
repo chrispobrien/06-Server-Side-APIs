@@ -1,3 +1,4 @@
+// Element references used in this code
 var apiKeyOpenWeather = '42992f402d6e8d7b9cb59c278ef8f6bb';
 var searchButtonEl = document.querySelector("#btnSearch");
 var listCitiesEl = document.querySelector("#listCities");
@@ -5,7 +6,7 @@ var inputCityEl = document.querySelector("#inputCity");
 var cityWeatherEl = document.querySelector("#cityWeather");
 var forecastEl = document.querySelector("#forecast");
 
-// This object contains persistent data
+// This object model will be used to organize data
 var local = {
     city : "",
     lat : 0,
@@ -14,45 +15,89 @@ var local = {
     citiesList : []
 };
 
+// When a user enters a city name and clicks on Search
 searchButtonEl.addEventListener("click", function(event) {
-
+    console.log(inputCityEl.value);
+    if (inputCityEl.value) {
+        local.city = inputCityEl.value;
+        inputCityEl.value = "";
+        inputCityEl.focus();
+        getLatLon();
+    }
 });
 
+// When a user presses Enter on the city input text box
+inputCityEl.addEventListener("keypress", function(event) {
+    if (event.key === "Enter") {
+        local.city = inputCityEl.value;
+        inputCityEl.value = "";
+        inputCityEl.focus();
+        getLatLon();
+    }
+})
+
+// When a user clicks on a city button
 listCitiesEl.addEventListener("click", function(event) {
-
+    if (event.target.classList.contains("btn")) {
+        local.city = event.target.textContent;
+        inputCityEl.focus();
+        getLatLon();
+    }
 });
 
+// Fill current weather element and call function to fill 5-day forecast
 var fillCurrentWeather = function() {
+    // Clear anything within the current weather box
     cityWeatherEl.innerHTML = "";
+
+    // if there is no weather data add empty h3 and return
+    if (!local.currentWeather) {
+        let h3 = document.createElement("h3");
+        h3.textContent = " ";
+        cityWeatherEl.appendChild(h3);
+        return;
+    }
+
+    // Assemble elements
     let h3 = document.createElement("h3");
     let date = moment.unix(local.currentWeather.current.dt).local().format('MM/DD/YYYY');
     h3.textContent = local.city + " (" + date + ")";
     let weatherIcon = document.createElement("img");
     weatherIcon.setAttribute("src","http://openweathermap.org/img/wn/"+local.currentWeather.current.weather[0].icon+"@2x.png");
     weatherIcon.setAttribute("height","60px")
+    weatherIcon.setAttribute("alt",local.currentWeather.current.weather[0].description);
     h3.appendChild(weatherIcon);
     let temp = document.createElement("p");
-    temp.textContent = "Temp: " + local.currentWeather.current.temp;
+    temp.innerHTML = "Temp: " + Math.floor(local.currentWeather.current.temp) + "&deg; F";
     let wind = document.createElement("p");
-    wind.textContent = "Wind: " + local.currentWeather.current.wind_speed + " MPH";
+    wind.textContent = "Wind: " + Math.floor(local.currentWeather.current.wind_speed) + " MPH";
     let humidity = document.createElement("p");
     humidity.textContent = "Humidity: " + local.currentWeather.current.humidity + " %";
     let uvIndex = document.createElement("p");
-    uvIndex.textContent = "UV Index: " + local.currentWeather.current.uvi;
+    uvIndex.textContent = "UV Index: " + Math.floor(local.currentWeather.current.uvi);
+
+    // Append elements to existing element
     cityWeatherEl.appendChild(h3);
     cityWeatherEl.appendChild(temp);
     cityWeatherEl.appendChild(wind);
     cityWeatherEl.appendChild(humidity);
     cityWeatherEl.appendChild(uvIndex);
 
+    // Now fill the 5-day forecast
     fill5DayForecast();
 }
 
-// Forecast is a 5-day forecast, each card is identical
+// Create and return forecast card element
 var makeCard = function(parentEl, day) {
     let card = document.createElement("div");
-    card.setAttribute("class","card col-md-2 col-xs-12 m-1");
+    card.setAttribute("class","card col-card");
+
     let cardBody = document.createElement("div");
+
+    let cardDay = document.createElement("h6");
+    cardDay.setAttribute("class","card-title");
+    cardDay.textContent = moment.unix(day.dt).local().format('dddd');
+
     let cardTitle = document.createElement("h6");
     cardTitle.setAttribute("class","card-title");
     cardTitle.textContent = moment.unix(day.dt).local().format('MM/DD/YYYY');
@@ -60,13 +105,18 @@ var makeCard = function(parentEl, day) {
     let weatherIcon = document.createElement("img");
     weatherIcon.setAttribute("src","http://openweathermap.org/img/wn/"+day.weather[0].icon+"@2x.png");
     weatherIcon.setAttribute("height","50px");
+    weatherIcon.setAttribute("alt",day.weather[0].description);
+
     let temp = document.createElement("p");
-    temp.textContent = "Temp: " + day.temp.max;
+    temp.innerHTML = "High: " + Math.floor(day.temp.max) + "&deg; F";
+
     let wind = document.createElement("p");
-    wind.textContent = "Wind: " + day.wind_speed + " MPH";
+    wind.textContent = "Wind: " + Math.floor(day.wind_speed) + " MPH";
+
     let humidity = document.createElement("p");
     humidity.textContent = "Humidity: " + day.humidity + " %";
 
+    cardBody.appendChild(cardDay);
     cardBody.appendChild(cardTitle);
     cardBody.appendChild(weatherIcon);
     cardBody.appendChild(temp);
@@ -78,25 +128,34 @@ var makeCard = function(parentEl, day) {
     return card;
 }
 
+// Clear forecast area, create row for title, create row for each day card forecast
 var fill5DayForecast = function() {
+    // Clear the 5-day forecast
     forecastEl.innerHTML = "";
+
+    // Create elements of the 5-day forecast
     let row = document.createElement("div");
     row.setAttribute("class","row");
+
     let title = document.createElement("h4");
     title.textContent = "5-Day Forecast:";
     title.setAttribute("class","col-12");
+
     let days = document.createElement("div");
     days.setAttribute("class","row justify-content-between");
-    for (i=0;i<5;i++) {
+
+    // Iterate over the next 5 days, make cards for each day
+    for (i=1;i<6;i++) {
         days.appendChild(makeCard(days,local.currentWeather.daily[i]));
     }
+
     row.appendChild(title);
     row.appendChild(days);
     forecastEl.appendChild(row);
-
 }
 
 // This uses the openweathermap geocoding API to get lat and lon coordinates for city name
+// *** This is the entry point where localStorage has a city or the city has changed
 var getLatLon = function() {
     let apiURL = "https://api.openweathermap.org/geo/1.0/direct?q="
      + local.city
@@ -109,18 +168,22 @@ var getLatLon = function() {
         // If response is ok and...
         if (response.ok) {
             response.json().then(function(data) {
-                // Store the city returned from the API call
-                local.lat = data[0].lat;
-                local.lon = data[0].lon;
-                local.city = data[0].name;
-                getWeather();
-            });
+                if (data.length>0) {
+                    // Store the city returned from the API call
+                    local.lat = data[0].lat;
+                    local.lon = data[0].lon;
+                    local.city = data[0].name;
+                    getWeather();
+                }
+            }
+            );
         } else {
-            // Error?
+            // Error handling?
         }
     });    
 }
 
+// Weather API call, gets current weather and forecast
 var getWeather = function() {
     let apiURL = "https://api.openweathermap.org/data/2.5/onecall?lat="
      + local.lat
@@ -146,7 +209,7 @@ var getWeather = function() {
     });    
 }
 
-
+// Dynamically create buttons for list of cities
 var makeCityButtons = function() {
     // Clear city buttons
     listCitiesEl.innerHTML = "";
@@ -160,21 +223,8 @@ var makeCityButtons = function() {
     }
 }
 
-// Load cities list from localStorage
-var loadCitiesList = function() {
-    local.citiesList = JSON.parse(localStorage.getItem("cities"));
-    // If it's missing load a default list and save it to localStorage
-    if (!local.citiesList) {
-        local.citiesList = ["Austin","Chicago","New York","Orlando","San Francisco","Seattle","Denver","Atlanta"];
-        saveCitiesList();
-    }
-}
-
-// Save current cities list to localStorage
-var saveCitiesList = function() {
-    local.localStorage.setItem("cities",JSON.stringify(local.citiesList));
-}
-
+// On page load or reload, load data from localStorage
+// If it's missing, or over 5 minutes old, load from API calls
 var loadWeather = function() {
     local = JSON.parse(localStorage.getItem("weather"));
     // If it's missing initialize the local object and do API calls
@@ -188,8 +238,18 @@ var loadWeather = function() {
         };
         findCurrentCity();
     } else {
-        // If there is a local object, display data
-        fillCurrentWeather();
+        // If there is a localStorage object, check how old the data is
+        console.log("Current Time: "+moment().format("hh:mm:ss a"));
+        console.log("Last API Call: "+moment.unix(local.currentWeather.current.dt).local().format("hh:mm:ss a"));
+        let currentTime = moment();
+        let lastUpdated = moment.unix(local.currentWeather.current.dt).add(5,"minute");
+        // If weather API has not been refreshed in over 5 minutes, call the API again
+        if (currentTime > lastUpdated) {
+            getWeather();
+        } else {
+            // Otherwise skip the API and load from localStorage
+            fillCurrentWeather();
+        }
     }
 }
 
@@ -199,6 +259,7 @@ var saveWeather = function() {
 }
 
 // Get the current city by visitor's IP address
+// *** This is the entry point where there is no localStorage city defined
 var findCurrentCity = function() {
     // This is free and doesn't require an API key
     let apiUrl = "http://ip-api.com/json/";
@@ -223,7 +284,7 @@ var findCurrentCity = function() {
     });
 };
 
-loadCitiesList();
+//loadCitiesList();
 loadWeather();
 makeCityButtons();
 //findCurrentCity();
