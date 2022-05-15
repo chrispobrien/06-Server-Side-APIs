@@ -255,7 +255,7 @@ var makeCityButtons = function() {
     // Iterate over list of cities and create a button for it
     for (i=0;i<local.citiesList.length;i++) {
         let newButton = document.createElement("button");
-        newButton.setAttribute("class","form-control btn btn-secondary btn-sm mt-1 mb-1");
+        newButton.setAttribute("class","form-control btn btn-secondary btn-lg mt-1 mb-1");
         newButton.textContent = local.citiesList[i];
         listCitiesEl.appendChild(newButton);
     }
