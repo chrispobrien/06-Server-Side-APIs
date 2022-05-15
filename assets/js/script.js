@@ -302,7 +302,7 @@ var saveWeather = function() {
 // *** This is the entry point where there is no localStorage city defined
 var findCurrentCity = function() {
     // This is free and doesn't require an API key
-    let apiUrl = "http://ip-api.com/json/";
+    let apiUrl = "https://ip-api.com/json/";
 
     // An API call without parameters will use the visitor's current IP address
     fetch(apiUrl).then(function(response) {
@@ -316,10 +316,10 @@ var findCurrentCity = function() {
                     getLatLon();
                 }
                 else
-                    local.city = "";
+                    local.city = "New York";
             });
         } else {
-            local.city = "";
+            local.city = "New York";
         }
     });
 };
