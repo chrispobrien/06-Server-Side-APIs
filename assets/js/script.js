@@ -3,6 +3,7 @@ var searchButtonEl = document.querySelector("#btnSearch");
 var listCitiesEl = document.querySelector("#listCities");
 var inputCityEl = document.querySelector("#inputCity");
 var cityWeatherEl = document.querySelector("#cityWeather");
+var forecastEl = document.querySelector("#forecast");
 
 // This object contains persistent data
 var local = {
@@ -27,7 +28,8 @@ var fillCurrentWeather = function() {
     let date = moment.unix(local.currentWeather.current.dt).local().format('MM/DD/YYYY');
     h3.textContent = local.city + " (" + date + ")";
     let weatherIcon = document.createElement("img");
-    weatherIcon.setAttribute("src","http://openweathermap.org/img/wn/"+local.currentWeather.icon+"@2x.png");
+    weatherIcon.setAttribute("src","http://openweathermap.org/img/wn/"+local.currentWeather.current.weather[0].icon+"@2x.png");
+    weatherIcon.setAttribute("height","60px")
     h3.appendChild(weatherIcon);
     let temp = document.createElement("p");
     temp.textContent = "Temp: " + local.currentWeather.current.temp;
@@ -42,6 +44,56 @@ var fillCurrentWeather = function() {
     cityWeatherEl.appendChild(wind);
     cityWeatherEl.appendChild(humidity);
     cityWeatherEl.appendChild(uvIndex);
+
+    fill5DayForecast();
+}
+
+// Forecast is a 5-day forecast, each card is identical
+var makeCard = function(parentEl, day) {
+    let card = document.createElement("div");
+    card.setAttribute("class","card col-md-2 col-xs-12 m-1");
+    let cardBody = document.createElement("div");
+    let cardTitle = document.createElement("h6");
+    cardTitle.setAttribute("class","card-title");
+    cardTitle.textContent = moment.unix(day.dt).local().format('MM/DD/YYYY');
+
+    let weatherIcon = document.createElement("img");
+    weatherIcon.setAttribute("src","http://openweathermap.org/img/wn/"+day.weather[0].icon+"@2x.png");
+    weatherIcon.setAttribute("height","50px");
+    let temp = document.createElement("p");
+    temp.textContent = "Temp: " + day.temp.max;
+    let wind = document.createElement("p");
+    wind.textContent = "Wind: " + day.wind_speed + " MPH";
+    let humidity = document.createElement("p");
+    humidity.textContent = "Humidity: " + day.humidity + " %";
+
+    cardBody.appendChild(cardTitle);
+    cardBody.appendChild(weatherIcon);
+    cardBody.appendChild(temp);
+    cardBody.appendChild(wind);
+    cardBody.appendChild(humidity);
+    
+    card.appendChild(cardBody);
+
+    return card;
+}
+
+var fill5DayForecast = function() {
+    forecastEl.innerHTML = "";
+    let row = document.createElement("div");
+    row.setAttribute("class","row");
+    let title = document.createElement("h4");
+    title.textContent = "5-Day Forecast:";
+    title.setAttribute("class","col-12");
+    let days = document.createElement("div");
+    days.setAttribute("class","row justify-content-between");
+    for (i=0;i<5;i++) {
+        days.appendChild(makeCard(days,local.currentWeather.daily[i]));
+    }
+    row.appendChild(title);
+    row.appendChild(days);
+    forecastEl.appendChild(row);
+
 }
 
 // This uses the openweathermap geocoding API to get lat and lon coordinates for city name
@@ -85,6 +137,7 @@ var getWeather = function() {
             response.json().then(function(data) {
                 // Store the current weather
                 local.currentWeather = data;
+                saveWeather();
                 fillCurrentWeather();
             });
         } else {
@@ -119,7 +172,30 @@ var loadCitiesList = function() {
 
 // Save current cities list to localStorage
 var saveCitiesList = function() {
-    local.localStorage.setItem("cities",JSON.stringify(citiesList));
+    local.localStorage.setItem("cities",JSON.stringify(local.citiesList));
+}
+
+var loadWeather = function() {
+    local = JSON.parse(localStorage.getItem("weather"));
+    // If it's missing initialize the local object and do API calls
+    if (!local) {
+        local = {
+            city : "",
+            lat : 0,
+            lon : 0,
+            currentWeather : null,
+            citiesList : ["Austin","Chicago","New York","Orlando","San Francisco","Seattle","Denver","Atlanta"]
+        };
+        findCurrentCity();
+    } else {
+        // If there is a local object, display data
+        fillCurrentWeather();
+    }
+}
+
+// Save local object including weather to localStorage
+var saveWeather = function() {
+    localStorage.setItem("weather",JSON.stringify(local));
 }
 
 // Get the current city by visitor's IP address
@@ -148,6 +224,7 @@ var findCurrentCity = function() {
 };
 
 loadCitiesList();
+loadWeather();
 makeCityButtons();
 //findCurrentCity();
 inputCityEl.focus();
