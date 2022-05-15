@@ -84,7 +84,7 @@ var fillCurrentWeather = function() {
     let date = moment.unix(local.currentWeather.daily[0].dt).format('MM/DD/YYYY');
     h3.textContent = local.city + " (" + date + ")";
     let weatherIcon = document.createElement("img");
-    weatherIcon.setAttribute("src","http://openweathermap.org/img/wn/"+local.currentWeather.current.weather[0].icon+"@2x.png");
+    weatherIcon.setAttribute("src","https://openweathermap.org/img/wn/"+local.currentWeather.current.weather[0].icon+"@2x.png");
     weatherIcon.setAttribute("height","60px")
     weatherIcon.setAttribute("alt",local.currentWeather.current.weather[0].description);
     h3.appendChild(weatherIcon);
@@ -140,7 +140,7 @@ var makeCard = function(parentEl, day) {
     cardTitle.textContent = moment.unix(day.dt).local().format('MM/DD/YYYY');
 
     let weatherIcon = document.createElement("img");
-    weatherIcon.setAttribute("src","http://openweathermap.org/img/wn/"+day.weather[0].icon+"@2x.png");
+    weatherIcon.setAttribute("src","https://openweathermap.org/img/wn/"+day.weather[0].icon+"@2x.png");
     weatherIcon.setAttribute("height","50px");
     weatherIcon.setAttribute("alt",day.weather[0].description);
 
