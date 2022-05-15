@@ -16,11 +16,12 @@ h1, h2, h3, h4, h5, h6 {
     font-weight: bolder;
 }
 
+/* Apply background gradient to header section*/
 .weather-dashboard {
     background: linear-gradient(to right,#3463bc,#20094b);
 }
 
-/* 5-day forecast card */
+/* 5-day forecast card, a little lighter than the example to show raindrops */
 .card {
     background-color: #587493;
     color: white;
@@ -34,5 +35,5 @@ h1, h2, h3, h4, h5, h6 {
 
 /* When page is too small, make cards width 100% */
 @media (max-width: 768px) {
-    .col-card { width: 100%;}
+    .col-card { width: 45%;}
 }

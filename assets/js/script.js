@@ -45,6 +45,26 @@ listCitiesEl.addEventListener("click", function(event) {
     }
 });
 
+// Maintain city list
+var addCity = function(city) {
+    let cityIndex = local.citiesList.indexOf(city);
+
+    // If city is already in the list move it to the top
+    if (cityIndex>-1) {
+        local.citiesList.splice(cityIndex,1);
+        local.citiesList.unshift(city);
+    } else {
+        // If it's a new city remove the last entry and put the new city on the top
+        local.citiesList.pop();
+        local.citiesList.unshift(city);
+    }
+
+    // Write new city list to localStorage
+    saveWeather();
+    // Update buttons
+    makeCityButtons();
+};
+
 // Fill current weather element and call function to fill 5-day forecast
 var fillCurrentWeather = function() {
     // Clear anything within the current weather box
@@ -60,7 +80,8 @@ var fillCurrentWeather = function() {
 
     // Assemble elements
     let h3 = document.createElement("h3");
-    let date = moment.unix(local.currentWeather.current.dt).local().format('MM/DD/YYYY');
+    // Current date of city in that city
+    let date = moment.unix(local.currentWeather.daily[0].dt).format('MM/DD/YYYY');
     h3.textContent = local.city + " (" + date + ")";
     let weatherIcon = document.createElement("img");
     weatherIcon.setAttribute("src","http://openweathermap.org/img/wn/"+local.currentWeather.current.weather[0].icon+"@2x.png");
@@ -73,15 +94,31 @@ var fillCurrentWeather = function() {
     wind.textContent = "Wind: " + Math.floor(local.currentWeather.current.wind_speed) + " MPH";
     let humidity = document.createElement("p");
     humidity.textContent = "Humidity: " + local.currentWeather.current.humidity + " %";
-    let uvIndex = document.createElement("p");
-    uvIndex.textContent = "UV Index: " + Math.floor(local.currentWeather.current.uvi);
+    let uvIndexWrapper = document.createElement("div");
+    uvIndexWrapper.setAttribute("class","row justify-content-start align-items-start");
+    let uvIndex = document.createElement("div");
+    uvIndex.setAttribute("class","col-2");
+    uvIndex.textContent = "UV Index: ";
+    let uvPill = document.createElement("div");
+    uvPill.setAttribute("width","40px");
+    uvPill.textContent = Math.floor(local.currentWeather.current.uvi);
+    if (local.currentWeather.current.uvi<3) {
+        uvPill.setAttribute("class","col-1 p-1 text-center text-light rounded-pill bg-success");
+    } else
+    if (local.currentWeather.current.uvi<6) {
+        uvPill.setAttribute("class","col-1 p-1 text-center rounded-pill bg-warning");
+    } else {
+        uvPill.setAttribute("class","col-1 p-1 text-center text-light rounded-pill bg-danger");
+    }
+    uvIndexWrapper.appendChild(uvIndex);
+    uvIndexWrapper.appendChild(uvPill);
 
     // Append elements to existing element
     cityWeatherEl.appendChild(h3);
     cityWeatherEl.appendChild(temp);
     cityWeatherEl.appendChild(wind);
     cityWeatherEl.appendChild(humidity);
-    cityWeatherEl.appendChild(uvIndex);
+    cityWeatherEl.appendChild(uvIndexWrapper);
 
     // Now fill the 5-day forecast
     fill5DayForecast();
@@ -173,6 +210,7 @@ var getLatLon = function() {
                     local.lat = data[0].lat;
                     local.lon = data[0].lon;
                     local.city = data[0].name;
+                    addCity(local.city);
                     getWeather();
                 }
             }
@@ -251,6 +289,8 @@ var loadWeather = function() {
             fillCurrentWeather();
         }
     }
+    makeCityButtons();
+    inputCityEl.focus();
 }
 
 // Save local object including weather to localStorage
@@ -284,8 +324,4 @@ var findCurrentCity = function() {
     });
 };
 
-//loadCitiesList();
 loadWeather();
-makeCityButtons();
-//findCurrentCity();
-inputCityEl.focus();
