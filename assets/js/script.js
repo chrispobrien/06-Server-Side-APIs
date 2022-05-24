@@ -1,5 +1,5 @@
 // Element references used in this code
-var apiKeyOpenWeather = '42992f402d6e8d7b9cb59c278ef8f6bb';
+var apiKeyOpenWeather = '';
 var searchButtonEl = document.querySelector("#btnSearch");
 var listCitiesEl = document.querySelector("#listCities");
 var inputCityEl = document.querySelector("#inputCity");
